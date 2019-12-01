@@ -1,0 +1,11 @@
+# Ignore docs
+/docs/
+/log/
+/__pychache/
+*.pyc
+.vscode
+.idea
+*.log*
+
+#Avoid large files 
+/files/gsod*
