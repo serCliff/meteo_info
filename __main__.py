@@ -7,8 +7,8 @@ Creado como trabajo de fin del módulo de python del máster Big Data UCM
 Autor: Sergio del Castillo Baranda - 2019
 
 """
-from meteo_info.utils.utils import get_logger_conf
-from meteo_info.projects.final import final
+from meteo_info.utils.file_utils import get_logger_conf
+from meteo_info.projects.pandas_final import pandas_final
 
 import logging.config
 import yaml
@@ -20,4 +20,4 @@ with open(get_logger_conf()) as f:
 
 
 if __name__ == '__main__':
-    final()
+    pandas_final()

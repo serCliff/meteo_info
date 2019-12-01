@@ -10,6 +10,7 @@ def printed(func):
     """
     def wrapped(*args):
         res = func(*args)
+        print(func.__doc__)
         if isinstance(res, dict or list):
             pprint(res)
         else:
