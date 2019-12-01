@@ -36,6 +36,9 @@ def ej1(dataframe):
 
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
+    
+    Returns:
+        {int} -- Número de filas con datos correctos
     """
     return len(correct_indexes_from_df(dataframe))
 
@@ -47,6 +50,9 @@ def ej2(dataframe):
 
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
+
+    Returns:
+        ({int},{int}) -- Estación, Número de datos
     """
 
     min_general_correct_values = len(dataframe.index)
@@ -59,7 +65,7 @@ def ej2(dataframe):
         if min_stat_incorrect < min_general_correct_values:
             min_general_correct_values = min_stat_incorrect
             stat_with_min_correct_values = stat
-    return stat_with_min_correct_values
+    return (stat_with_min_correct_values, min_general_correct_values)
 
 
 def ej3(dataframe):

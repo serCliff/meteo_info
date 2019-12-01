@@ -23,6 +23,7 @@ Funciones:
 from meteo_info.utils.file_utils import check_if_file_exists
 from datetime import datetime
 import pandas
+import numpy as np
 import logging
 
 logger = logging.getLogger()
@@ -114,7 +115,17 @@ def make_gsod_df_from_file(filepath):
     check_if_file_exists(filepath)
     info = dict()
     with open(filepath, 'r') as f:
-        for rowdata in f.readlines():
+        lines = f.readlines()
+        total = len(lines)
+        cuarters = np.array([0, 0.25, 0.5, 0.75])
+        total_elements = (total * cuarters).astype(int)
+        index = 0
+        for rowdata in lines:
             get_gsod_row(info, rowdata)
+            if index in total_elements or index == total-1:
+                index += 1
+                logger.info("Leyendo {}/{}".format(index, total))
+            else:
+                index += 1
     logger.info("Dataframe obtenido correctamente.")
     return pandas.DataFrame(info)

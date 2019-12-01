@@ -15,6 +15,7 @@ def printed(func):
             pprint(res)
         else:
             print(res)
+        print("==============================================================")
         return res
     return wrapped
 
