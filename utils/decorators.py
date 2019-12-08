@@ -10,9 +10,10 @@ def printed(func):
     """Decorador usado para imprimir el resultado de una función
     """
     def wrapped(*args, **kwargs):
-        res = func(*args, **kwargs)
         _logger.info("Ejecutando {}".format(func.__name__))
+        print(func.__name__)
         print(func.__doc__)
+        res = func(*args, **kwargs)
         if isinstance(res, dict or list):
             pprint(res)
         else:
