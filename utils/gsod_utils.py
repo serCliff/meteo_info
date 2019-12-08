@@ -85,21 +85,22 @@ def parser(value, vtype):
                         "parseado a {1}".format(value, vtype))
 
 
-def get_gsod_row(dictdata, rowdata):
-    """Rellena el diccionario con la información de una línea de un fichero gsod
+def get_gsod_row(rowdata):
+    """Devuelve una lista con la info de una línea de un fichero gsod
 
     Arguments:
-        dictdata {dict} -- Diccionario a rellenar
         rowdata {str} -- Línea con formato gsod
+
+    Return:
+        {list} -- GSOD_DATA de la línea
     """
     # global GSOD_DATA
+    res = list()
     for key, value in GSOD_DATA.items():
         rdata = rowdata[value['begin']:value['final']]
         rdata = parser(rdata.strip(), value['type'])
-        if key not in dictdata:
-            dictdata[key] = [rdata]
-        else:
-            dictdata[key].append(rdata)
+        res.append(rdata)
+    return res
 
 
 def make_gsod_df_from_file(filepath):
@@ -113,7 +114,7 @@ def make_gsod_df_from_file(filepath):
         {Dataframe} -- Pandas dataframe con la info del fichero
     """
     check_if_file_exists(filepath)
-    info = dict()
+    df = pandas.DataFrame(columns=GSOD_DATA.keys())
     with open(filepath, 'r') as f:
         lines = f.readlines()
         total = len(lines)
@@ -121,11 +122,11 @@ def make_gsod_df_from_file(filepath):
         total_elements = (total * cuarters).astype(int)
         index = 0
         for rowdata in lines:
-            get_gsod_row(info, rowdata)
+            df.loc[index] = get_gsod_row(rowdata)
             if index in total_elements or index == total-1:
                 index += 1
                 logger.info("Leyendo {}/{}".format(index, total))
             else:
                 index += 1
     logger.info("Dataframe obtenido correctamente.")
-    return pandas.DataFrame(info)
+    return df

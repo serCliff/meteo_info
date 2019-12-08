@@ -20,4 +20,4 @@ with open(get_logger_conf()) as f:
 
 
 if __name__ == '__main__':
-    pandas_final()
+    pandas_final('sample1000.txt')

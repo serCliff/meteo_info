@@ -29,14 +29,13 @@ def correct_indexes_from_df(df, incorrect=9999.9):
               (df['pressure'] < incorrect)].index
 
 
-@printed
 def ej1(dataframe):
     """
     Número de filas con datos de temperatura y presión (ambos) correctos.
 
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
-    
+
     Returns:
         {int} -- Número de filas con datos correctos
     """
@@ -68,16 +67,31 @@ def ej2(dataframe):
     return (stat_with_min_correct_values, min_general_correct_values)
 
 
+@printed
 def ej3(dataframe):
     """
     Por cada estación, el máximo y el mínimo de temperatura registrada.
 
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
+
+    Returns:
+        ({Dataframe}) -- Dataframe con max y min por stat
     """
-    pass
+    import pandas
+    df_res = pandas.DataFrame(columns=['id_stat', 'max', 'min'])
+    index = 0
+    colname = 'temperature'
+    for stat in dataframe['id_stat'].unique():
+        stat_df = dataframe[dataframe['id_stat'] == stat]
+        max_value = dataframe.iloc[stat_df[colname].idxmax()][colname]
+        min_value = dataframe.iloc[stat_df[colname].idxmin()][colname]
+        df_res.loc[index] = [stat, max_value, min_value]
+        index += 1
+    return df_res
 
 
+@printed
 def ej4(dataframe):
     """
     Por cada mes y estación la temperatura máxima y mínima registrada
@@ -85,13 +99,44 @@ def ej4(dataframe):
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
     """
-    pass
+    import calendar
+    from datetime import datetime
+    import pandas
+    df_res = pandas.DataFrame(columns=['id_stat', 'date', 'max', 'min'])
+
+    distinct_dates = dataframe['date'].dt.strftime("%m/%Y"). \
+        drop_duplicates().unique().tolist()
+
+    index = 0
+    colname = 'temperature'
+    # Recorremos todos los meses diferentes
+    for date in distinct_dates:
+        month, year = date.split("/")
+        last_day = calendar.monthrange(int(year), int(month))[1]
+        start_date = datetime.strptime(date, "%m/%Y")
+        last_date = start_date.replace(day=last_day)
+
+        df = dataframe[(dataframe['date'] > start_date) &
+                       (dataframe['date'] <= last_date)]
+        # En esta fecha, recorremos las estaciones y obtenemos su máximo y mínimo
+        for stat in df['id_stat'].unique():
+            stat_df = dataframe[dataframe['id_stat'] == stat]
+            max_value = dataframe.iloc[stat_df[colname].idxmax()][colname]
+            min_value = dataframe.iloc[stat_df[colname].idxmin()][colname]
+            df_res.loc[index] = [stat, date, max_value, min_value]
+            index += 1
+
+    return df_res
 
 
-def pandas_final(filename='sample.txt'):
+def pandas_final(filepath='sample.txt', from_files=True):
     logger.info("Ejecutando práctica final...")
-    weather_file = import_from_files(filename)
 
-    df = make_gsod_df_from_file(weather_file)
+    weather_file_path = filepath
+    if from_files:
+        weather_file_path = import_from_files(filepath)
+    df = make_gsod_df_from_file(weather_file_path)
     ej1(df)
     ej2(df)
+    ej3(df)
+    ej4(df)
