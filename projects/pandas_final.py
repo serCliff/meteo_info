@@ -1,6 +1,9 @@
-from meteo_info.utils.file_utils import import_from_files
-from meteo_info.utils.gsod_utils import make_gsod_df_from_file
-from meteo_info.utils.decorators import printed
+from utils.file_utils import import_from_files
+from utils.gsod_utils import make_gsod_df_from_file
+from utils.decorators import printed, timing
+import calendar
+from datetime import datetime
+import pandas
 import logging
 
 logger = logging.getLogger()
@@ -29,6 +32,7 @@ def correct_indexes_from_df(df, incorrect=9999.9):
               (df['pressure'] < incorrect)].index
 
 
+@printed
 def ej1(dataframe):
     """
     Número de filas con datos de temperatura y presión (ambos) correctos.
@@ -99,9 +103,6 @@ def ej4(dataframe):
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
     """
-    import calendar
-    from datetime import datetime
-    import pandas
     df_res = pandas.DataFrame(columns=['id_stat', 'date', 'max', 'min'])
 
     distinct_dates = dataframe['date'].dt.strftime("%m/%Y"). \
@@ -118,7 +119,8 @@ def ej4(dataframe):
 
         df = dataframe[(dataframe['date'] > start_date) &
                        (dataframe['date'] <= last_date)]
-        # En esta fecha, recorremos las estaciones y obtenemos su máximo y mínimo
+        # En esta fecha, recorremos las estaciones y obtenemos su máximo
+        #  y mínimo
         for stat in df['id_stat'].unique():
             stat_df = dataframe[dataframe['id_stat'] == stat]
             max_value = dataframe.iloc[stat_df[colname].idxmax()][colname]
@@ -129,6 +131,7 @@ def ej4(dataframe):
     return df_res
 
 
+@timing
 def pandas_final(filepath='sample.txt', from_files=True):
     logger.info("Ejecutando práctica final...")
 

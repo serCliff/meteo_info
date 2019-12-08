@@ -20,7 +20,8 @@ Funciones:
                 gsod almacenado en la ruta
 
 """
-from meteo_info.utils.file_utils import check_if_file_exists
+from utils.file_utils import check_if_file_exists
+from utils.file_utils import check_file_extension
 from datetime import datetime
 import pandas
 import numpy as np
@@ -85,47 +86,65 @@ def parser(value, vtype):
                         "parseado a {1}".format(value, vtype))
 
 
-def get_gsod_row(rowdata):
-    """Devuelve una lista con la info de una línea de un fichero gsod
-
+def get_gsod_row(dictdata, rowdata):
+    """Rellena el diccionario con la información de una línea de un fichero gsod
     Arguments:
+        dictdata {dict} -- Diccionario a rellenar
         rowdata {str} -- Línea con formato gsod
-
-    Return:
-        {list} -- GSOD_DATA de la línea
     """
     # global GSOD_DATA
-    res = list()
     for key, value in GSOD_DATA.items():
         rdata = rowdata[value['begin']:value['final']]
         rdata = parser(rdata.strip(), value['type'])
-        res.append(rdata)
-    return res
+        if key not in dictdata:
+            dictdata[key] = [rdata]
+        else:
+            dictdata[key].append(rdata)
 
 
 def make_gsod_df_from_file(filepath):
     """Genera un dataframe con los datos de un fichero de tipo gsod
     almacenados en un fichero existente en filepath
 
+    Se hicieron 3 pruebas:
+
+        - 1ª Generando un dict y al acabar generar dataframe
+        - 2ª Generando un dataframe directamente
+        - 3ª Generando multiples dict y pasándolo a dataframe en partes
+
+    Conclusión:
+
+        Se utilizó la 3ª porque la 1ª consumía demasiada ram con archivos
+        demasiado grandes y la 2ª consumía demasiado tiempo en la lectura
+        (el doble que la primera). Con la tercera a penas aumentamos un 
+        poco el tiempo y la ram está mucho más liberada.
+
+
     Arguments:
         filepath {str} -- Ruta del fichero gsod con el que trabajar
-
     Returns:
         {Dataframe} -- Pandas dataframe con la info del fichero
     """
-    check_if_file_exists(filepath)
+    check_file_extension(filepath)
+    logger.info("Leyendo archivo {}".format(filepath))
+
+    info = dict()
     df = pandas.DataFrame(columns=GSOD_DATA.keys())
+
     with open(filepath, 'r') as f:
         lines = f.readlines()
         total = len(lines)
-        cuarters = np.array([0, 0.25, 0.5, 0.75])
-        total_elements = (total * cuarters).astype(int)
+        dict_size = int(total*0.1)
         index = 0
         for rowdata in lines:
-            df.loc[index] = get_gsod_row(rowdata)
-            if index in total_elements or index == total-1:
+            get_gsod_row(info, rowdata)
+            if index % dict_size == 0 or index == total-1 or index == 0:
+                a = pandas.DataFrame(info, columns=GSOD_DATA.keys())
+                df = df.append(a)
+                info = dict()
                 index += 1
-                logger.info("Leyendo {}/{}".format(index, total))
+                per = round(index / total * 100, 2)
+                logger.info("Leyendo {}/{} {}%".format(index, total, per))
             else:
                 index += 1
     logger.info("Dataframe obtenido correctamente.")

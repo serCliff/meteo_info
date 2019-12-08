@@ -19,7 +19,7 @@ Funciones:
                     una carpeta llamada log
 
 """
-from meteo_info.utils.decorators import check_if_file_exists
+from utils.decorators import check_if_file_exists
 import os
 import logging
 
@@ -71,7 +71,7 @@ def import_from_files(filename):
         {str} -- Path of the filename placed on .../meteo_info/files/
     """
     res = os.path.join(get_files_path(), filename)
-    logger.info("Importing {} from files".format(filename))
+    logger.info("Importando {} de ../files".format(filename))
     return res
 
 
@@ -101,3 +101,19 @@ def get_log_path():
         {str} -- Path of app.log
     """
     return os.path.join(os.path.join(get_module_path(), 'log'), 'app.log')
+
+
+def check_file_extension(filepath):
+    """Comprueba si la extensión del fichero está entre las soportadas
+
+    Soportadas:
+        - txt
+
+    Arguments:
+        filepath {str} -- Ruta del fichero
+
+    Raises:
+        Exception: Fichero no soportado
+    """
+    if not filepath.endswith(".txt"):
+        raise Exception("Extensión del fichero no soportada")
