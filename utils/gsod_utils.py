@@ -20,7 +20,7 @@ Funciones:
                 gsod almacenado en la ruta
 
 """
-from ..utils.file_utils import check_file_extension
+from utils.file_utils import check_file_extension
 import pandas
 import logging
 

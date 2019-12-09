@@ -1,6 +1,6 @@
-from ..utils.file_utils import import_from_files
-from ..utils.gsod_utils import make_gsod_df_from_file_fwf
-from ..utils.decorators import printed, timing
+from utils.file_utils import import_from_files
+from utils.gsod_utils import make_gsod_df_from_file_fwf
+from utils.decorators import printed, timing
 import calendar
 from datetime import datetime
 import pandas
@@ -133,7 +133,8 @@ def ej4(dataframe):
 
 @timing
 def pandas_final(filepath='sample.txt', from_files=True):
-    logger.info("Ejecutando práctica final (PANDAS)...")
+    logger.info("Ejecutando práctica final usando "
+                "funcionalidad de (PANDAS)...")
 
     weather_file_path = filepath
     if from_files:

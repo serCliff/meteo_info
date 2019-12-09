@@ -19,7 +19,7 @@ Funciones:
                     una carpeta llamada log
 
 """
-from ..utils.decorators import check_if_file_exists
+from utils.decorators import check_if_file_exists
 import os
 import logging
 

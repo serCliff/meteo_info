@@ -1,6 +1,7 @@
-from ..utils.file_utils import import_from_files
-from ..utils.gsod_utils import make_gsod_df_from_file_fwf
-from ..utils.decorators import printed, timing
+from utils.file_utils import import_from_files
+from utils.gsod_utils import make_gsod_df_from_file_fwf
+from utils.decorators import printed, timing
+from functools import reduce
 import calendar
 from datetime import datetime
 import pandas
@@ -9,7 +10,7 @@ import logging
 logger = logging.getLogger()
 
 
-def correct_indexes_from_df(df, incorrect=9999.9):
+def correct_indexes_from_df(values, incorrect=9999.9):
     """Obtiene del dataframe el conjunto de índices correctos
 
     - Un dato es correcto si no es 9999.9
@@ -19,17 +20,17 @@ def correct_indexes_from_df(df, incorrect=9999.9):
     Las columnas comprobadas son 'temperature' y 'pressure'
 
     Arguments:
-        df {Dataframe} -- Datos que serán filtrados
+        values ({float}, {float}) -- Datos que serán filtrados
 
     Keyword Arguments:
         incorrect {float} -- Filtro cuando un valor es incorrecto
                              (default: {9999.9})
 
     Returns:
-        {list} -- Lista de índices del dataframe que son correctos
+        ({Bool}, {Bool}) -- En cada campo comprobará si el dato es correcto
     """
-    return df[(df['temperature'] < incorrect) &
-              (df['pressure'] < incorrect)].index
+
+    return values[0] < incorrect, values[1] < incorrect
 
 
 @printed
@@ -43,7 +44,10 @@ def ej1(dataframe):
     Returns:
         {int} -- Número de filas con datos correctos
     """
-    return len(correct_indexes_from_df(dataframe))
+    data_list = dataframe.loc[:, ['temperature', 'pressure']].values.tolist()
+
+    mapped = map(correct_indexes_from_df, data_list)
+    return len(list(filter(lambda x: x[0] and x[1], list(mapped))))
 
 
 @printed
@@ -58,17 +62,19 @@ def ej2(dataframe):
         ({int},{int}) -- Estación, Número de datos
     """
 
-    min_general_correct_values = len(dataframe.index)
-    stat_with_min_correct_values = 0
-    # Recorremos todas las estaciones
-    for stat in dataframe['id_stat'].unique():
-        stat_df = dataframe[dataframe['id_stat'] == stat]
-        min_stat_incorrect = len(correct_indexes_from_df(stat_df))
-        # Almacenamos la estación con menor número de datos correctos
-        if min_stat_incorrect < min_general_correct_values:
-            min_general_correct_values = min_stat_incorrect
-            stat_with_min_correct_values = stat
-    return (stat_with_min_correct_values, min_general_correct_values)
+
+    data_list = dataframe.loc[:, ['id_stat',
+                                  'temperature',
+                                  'pressure']].values.tolist()
+    res = list(map(lambda x: (x[0], correct_indexes_from_df((x[1], x[2]))),
+                   data_list))
+    res2 = list(map(lambda x: (x[0], 1) if x[1][0] and x[1][1] else (x[0], 0),
+                    res))
+    # TODO: Revisar reduce para que cuente sólo lo que debería
+    res3 = reduce(lambda x, y: (x[0], x[1] + y[1]) if x[0] == y[0], res2)
+    # min_general_correct_values = len(dataframe.index)
+    # stat_with_min_correct_values = 0
+    # return (stat_with_min_correct_values, min_general_correct_values)
 
 
 @printed
@@ -132,8 +138,9 @@ def ej4(dataframe):
 
 
 @timing
-def pandas_final(filepath='sample.txt', from_files=True):
-    logger.info("Ejecutando práctica final (MAP-REDUCE)...")
+def map_reduce_final(filepath='sample.txt', from_files=True):
+    logger.info("Ejecutando práctica final usando "
+                "funcionalidad de (MAP-REDUCE)...")
 
     weather_file_path = filepath
     if from_files:
