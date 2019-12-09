@@ -32,4 +32,5 @@ if __name__ == '__main__':
         filepath = args.file
     else:
         filepath = 'sample5000.txt'
+        # filepath = 'gsod_s05.txt'
     pandas_final(filepath, from_files=fromfiles)

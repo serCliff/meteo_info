@@ -1,5 +1,5 @@
 from utils.file_utils import import_from_files
-from utils.gsod_utils import make_gsod_df_from_file
+from utils.gsod_utils import make_gsod_df_from_file, make_gsod_df_from_file2
 from utils.decorators import printed, timing
 import calendar
 from datetime import datetime
@@ -138,7 +138,8 @@ def pandas_final(filepath='sample.txt', from_files=True):
     weather_file_path = filepath
     if from_files:
         weather_file_path = import_from_files(filepath)
-    df = make_gsod_df_from_file(weather_file_path)
+
+    df = make_gsod_df_from_file2(weather_file_path)
     ej1(df)
     ej2(df)
     ej3(df)
