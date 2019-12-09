@@ -133,7 +133,7 @@ def ej4(dataframe):
 
 @timing
 def pandas_final(filepath='sample.txt', from_files=True):
-    logger.info("Ejecutando práctica final (PANDAS)...")
+    logger.info("Ejecutando práctica final (MAP-REDUCE)...")
 
     weather_file_path = filepath
     if from_files:
