@@ -29,7 +29,7 @@ def correct_indexes_from_df(df, incorrect=9999.9):
         {list} -- Lista de índices del dataframe que son correctos
     """
     return df[(df['temperature'] < incorrect) &
-              (df['pressure'] < incorrect)].index
+              (df['pressure'] < incorrect)]
 
 
 @printed
@@ -60,15 +60,23 @@ def ej2(dataframe):
 
     min_general_correct_values = len(dataframe.index)
     stat_with_min_correct_values = 0
+    res = list()
     # Recorremos todas las estaciones
     for stat in dataframe['id_stat'].unique():
         stat_df = dataframe[dataframe['id_stat'] == stat]
-        min_stat_incorrect = len(correct_indexes_from_df(stat_df))
-        # Almacenamos la estación con menor número de datos correctos
+        min_stat_incorrect = len(stat_df) - \
+            len(correct_indexes_from_df(stat_df))
+
+        # Reseteamos la lista si encontramos un valor menor que el anterior
         if min_stat_incorrect < min_general_correct_values:
+            res = list()
+        # Almacenamos las estaciones con menor número de datos correctos
+        if not min_stat_incorrect > min_general_correct_values:
             min_general_correct_values = min_stat_incorrect
             stat_with_min_correct_values = stat
-    return (stat_with_min_correct_values, min_general_correct_values)
+            res.append((stat_with_min_correct_values,
+                        min_general_correct_values))
+    return res
 
 
 @printed
