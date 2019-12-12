@@ -47,7 +47,7 @@ def make_gsod_df_from_file_fwf(filepath):
 
     Conclusión:
 
-        Se utilizó la 3ª porque la 1ª consumía demasiada ram con archivos
+        Se utilizó la 4ª porque la 1ª consumía demasiada ram con archivos
         demasiado grandes y la 2ª consumía demasiado tiempo en la lectura
         (el doble que la primera). Con la tercera a penas aumentamos un
         poco el tiempo y la ram está mucho más liberada. Sin embargo, la

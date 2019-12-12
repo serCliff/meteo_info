@@ -14,8 +14,12 @@ def printed(func):
         print(func.__name__)
         print(func.__doc__)
         res = func(*args, **kwargs)
-        if isinstance(res, dict or list):
+        _logger.info(res)
+        if isinstance(res, (dict, list)):
             pprint(res)
+            elms = "{} elementos.".format(len(res))
+            print(elms)
+            _logger.info(elms)
         else:
             print(res)
         print("==============================================================")
@@ -31,8 +35,10 @@ def timing(func):
         res = func(*args, **kwargs)
         end = datetime.now()
         total = end - start
-        _logger.info("Tiempo de ejecución de "
-                     "{} -> {}".format(func.__name__, total))
+        text_timing = "Tiempo de ejecución de " \
+                      "{} -> {}".format(func.__name__, total)
+        print(text_timing)
+        _logger.info(text_timing)
         return res
     return wrapped
 

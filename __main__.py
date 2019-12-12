@@ -22,7 +22,12 @@ with open(get_logger_conf()) as f:
     logging.config.dictConfig(conf)
 
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Ejecución de la práctica. '
+                                             'Por defecto realiza la '
+                                             'ejecución mediante el uso de '
+                                             'la librería pandas con el '
+                                             'fichero de ejemplo '
+                                             'sample.txt')
 parser.add_argument('-mr', '--map-reduce', dest='mr', required=False,
                     action='store_true',
                     help='Ejecutar usando funcionalidad de map y reduce')
@@ -37,9 +42,7 @@ if __name__ == '__main__':
         filepath = args.file
     else:
         filepath = 'sample.txt'
-        # filepath = 'sample5000.txt'
-        # filepath = 'gsod_s05.txt'
-    if not args.mr:
+    if args.mr:
         map_reduce_final(filepath, from_files=fromfiles)
     else:
         pandas_final(filepath, from_files=fromfiles)

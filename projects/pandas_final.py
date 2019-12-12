@@ -64,8 +64,7 @@ def ej2(dataframe):
     # Recorremos todas las estaciones
     for stat in dataframe['id_stat'].unique():
         stat_df = dataframe[dataframe['id_stat'] == stat]
-        min_stat_incorrect = len(stat_df) - \
-            len(correct_indexes_from_df(stat_df))
+        min_stat_incorrect = len(correct_indexes_from_df(stat_df))
 
         # Reseteamos la lista si encontramos un valor menor que el anterior
         if min_stat_incorrect < min_general_correct_values:
@@ -114,7 +113,7 @@ def ej4(dataframe):
     df_res = pandas.DataFrame(columns=['id_stat', 'date', 'max', 'min'])
 
     distinct_dates = dataframe['date'].dt.strftime("%m/%Y"). \
-        drop_duplicates().unique().tolist()
+        unique().tolist()
 
     index = 0
     colname = 'temperature'

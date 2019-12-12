@@ -1,6 +1,7 @@
 from utils.file_utils import import_from_files
 from utils.gsod_utils import make_gsod_df_from_file_fwf
 from utils.decorators import printed, timing
+from itertools import groupby
 from functools import reduce
 import calendar
 from datetime import datetime
@@ -29,8 +30,8 @@ def correct_indexes_from_df(values, incorrect=9999.9):
     Returns:
         ({Bool}, {Bool}) -- En cada campo comprobará si el dato es correcto
     """
-
-    return values[0] < incorrect, values[1] < incorrect
+    res = 1 if values[0] < incorrect and values[1] < incorrect else 0
+    return res
 
 
 @printed
@@ -46,8 +47,8 @@ def ej1(dataframe):
     """
     data_list = dataframe.loc[:, ['temperature', 'pressure']].values.tolist()
 
-    mapped = map(correct_indexes_from_df, data_list)
-    return len(list(filter(lambda x: x[0] and x[1], list(mapped))))
+    mapped_data = list(map(correct_indexes_from_df, data_list))
+    return len(list(filter(lambda x: x, mapped_data)))
 
 
 @printed
@@ -59,22 +60,25 @@ def ej2(dataframe):
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
 
     Returns:
-        ({int},{int}) -- Estación, Número de datos
+        [({int},{int})] -- Estación, Número de datos
     """
-
-
+    # Mapeado de estaciones correctas e incorrectas
     data_list = dataframe.loc[:, ['id_stat',
                                   'temperature',
                                   'pressure']].values.tolist()
-    res = list(map(lambda x: (x[0], correct_indexes_from_df((x[1], x[2]))),
-                   data_list))
-    res2 = list(map(lambda x: (x[0], 1) if x[1][0] and x[1][1] else (x[0], 0),
-                    res))
-    # TODO: Revisar reduce para que cuente sólo lo que debería
-    res3 = reduce(lambda x, y: (x[0], x[1] + y[1]) if x[0] == y[0], res2)
-    # min_general_correct_values = len(dataframe.index)
-    # stat_with_min_correct_values = 0
-    # return (stat_with_min_correct_values, min_general_correct_values)
+    res_per_stat = list(map(lambda x:
+                        (int(x[0]), correct_indexes_from_df((x[1], x[2]))),
+                        data_list))
+    # Agrupando por estación, obtengo los totales
+    total_grouped = [reduce(lambda x, y: (x[0], x[1] + y[1]), stat)
+                     for _, stat in groupby(sorted(res_per_stat),
+                                            lambda x: x[0])]
+
+    # Obtengo el valor menor
+    min_value = min([value[1] for value in total_grouped])
+
+    # Filtro por los valores menores encontrado
+    return list(filter(lambda x: x[1] == min_value, total_grouped))
 
 
 @printed
@@ -86,19 +90,21 @@ def ej3(dataframe):
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
 
     Returns:
-        ({Dataframe}) -- Dataframe con max y min por stat
+        [(id_stat, max, min)] -- Lista con max y min por stat
     """
-    import pandas
-    df_res = pandas.DataFrame(columns=['id_stat', 'max', 'min'])
-    index = 0
-    colname = 'temperature'
-    for stat in dataframe['id_stat'].unique():
-        stat_df = dataframe[dataframe['id_stat'] == stat]
-        max_value = dataframe.iloc[stat_df[colname].idxmax()][colname]
-        min_value = dataframe.iloc[stat_df[colname].idxmin()][colname]
-        df_res.loc[index] = [stat, max_value, min_value]
-        index += 1
-    return df_res
+    data_list = dataframe.loc[:, ['id_stat',
+                                  'temperature']].values.tolist()
+
+    # Mapeo valores de temperaturas (temp, max, min)
+    total_mapped = list(map(lambda x: (int(x[0]), x[1], x[1]), data_list))
+
+    # Agrupo obteniendo el maximo y minimo de cada estacion
+    total_grouped = [reduce(lambda x, y: (x[0],
+                                          max(x[1], y[1]),
+                                          min(x[2], y[2])), stat)
+                     for _, stat in groupby(sorted(total_mapped),
+                                            lambda x: x[0])]
+    return total_grouped
 
 
 @printed
@@ -108,33 +114,28 @@ def ej4(dataframe):
 
     Arguments:
         dataframe {Dataframe} -- Dataframe del que se obtendrá la información
+
+    Returns:
+        [(id_stat, date, max, min)] -- Lista con max y min por stat y fecha
     """
-    df_res = pandas.DataFrame(columns=['id_stat', 'date', 'max', 'min'])
+    data_list = dataframe.loc[:, ['id_stat',
+                                  'date',
+                                  'temperature']].values.tolist()
 
-    distinct_dates = dataframe['date'].dt.strftime("%m/%Y"). \
-        drop_duplicates().unique().tolist()
+    # Mapeo valores de temperaturas (temp, max, min)
+    total_mapped = list(map(lambda x: (int(x[0]),
+                                       x[1].strftime("%m/%Y"),
+                                       x[2],
+                                       x[2]), data_list))
 
-    index = 0
-    colname = 'temperature'
-    # Recorremos todos los meses diferentes
-    for date in distinct_dates:
-        month, year = date.split("/")
-        last_day = calendar.monthrange(int(year), int(month))[1]
-        start_date = datetime.strptime(date, "%m/%Y")
-        last_date = start_date.replace(day=last_day)
-
-        df = dataframe[(dataframe['date'] > start_date) &
-                       (dataframe['date'] <= last_date)]
-        # En esta fecha, recorremos las estaciones y obtenemos su máximo
-        #  y mínimo
-        for stat in df['id_stat'].unique():
-            stat_df = dataframe[dataframe['id_stat'] == stat]
-            max_value = dataframe.iloc[stat_df[colname].idxmax()][colname]
-            min_value = dataframe.iloc[stat_df[colname].idxmin()][colname]
-            df_res.loc[index] = [stat, date, max_value, min_value]
-            index += 1
-
-    return df_res
+    # Agrupo obteniendo el maximo y minimo de cada estacion
+    total_grouped = [reduce(lambda x, y: (x[0],
+                                          x[1],
+                                          max(x[2], y[2]),
+                                          min(x[3], y[3])), stat)
+                     for _, stat in groupby(sorted(total_mapped),
+                                            lambda x: x[0] and x[1])]
+    return total_grouped
 
 
 @timing
